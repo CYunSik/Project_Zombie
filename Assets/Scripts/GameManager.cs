@@ -11,8 +11,8 @@ public class GameManager : MonoBehaviour
             // 만약 싱글톤 변수에 아직 오브젝트가 할당되지 않았다면
             if (m_instance == null)
             {
-                // 씬에서 GameManager 오브젝트를 찾아 할당
-                m_instance = FindObjectOfType<GameManager>();
+                // FindFirstObjectByType으로 씬의 GameManager 오브젝트를 찾아 할당
+                m_instance = FindFirstObjectByType<GameManager>();
             }
 
             // 싱글톤 오브젝트를 반환
@@ -38,7 +38,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         // 플레이어 캐릭터의 사망 이벤트 발생시 게임 오버
-        FindObjectOfType<PlayerHealth>().onDeath += EndGame;
+        FindFirstObjectByType<PlayerHealth>().onDeath += EndGame;
     }
 
     // 점수를 추가하고 UI 갱신

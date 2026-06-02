@@ -6,14 +6,13 @@ public class PlayerMovement : MonoBehaviour
     public float moveSpeed = 5f; // 움직임의 속도
     public Transform cameraTransform; // 카메라의 트랜스폼
 
-    private PlayerInput playerInput; // 플레이어 입력을 알려주는 컴포넌트
     private Rigidbody playerRigidbody; // 플레이어 캐릭터의 리지드바디
     private Animator playerAnimator; // 플레이어 캐릭터의 애니메이터
+    private Vector3 moveDirection; // 현재 이동 방향
 
     private void Start()
     {
         // 사용할 컴포넌트들의 참조를 가져오기
-        playerInput = GetComponent<PlayerInput>();
         playerRigidbody = GetComponent<Rigidbody>();
         playerAnimator = GetComponent<Animator>();
     }
@@ -26,8 +25,9 @@ public class PlayerMovement : MonoBehaviour
         // 움직임 실행
         Move();
 
-        // 입력값에 따라 애니메이터의 Move 파라미터 값 변경
-        playerAnimator.SetFloat("Move", playerInput.move);
+        // 실제 이동 여부에 따라 애니메이터의 Move 파라미터 값 변경
+        // 기존에는 Vertical 입력만 사용해서 A/D 단독 이동 시 걷기 애니메이션이 나오지 않았다
+        playerAnimator.SetFloat("Move", moveDirection.magnitude);
     }
 
     // 입력값에 따라 캐릭터를 움직임
@@ -50,7 +50,8 @@ public class PlayerMovement : MonoBehaviour
         right.Normalize();
 
         // 이동 방향 벡터 계산
-        Vector3 moveDirection = (forward * verticalInput + right * horizontalInput).normalized;
+        moveDirection = (forward * verticalInput + right * horizontalInput).normalized;
+        // normalized 된 방향 벡터를 사용하므로 대각선 이동도 일반 이동과 같은 속도로 유지된다
         // 상대적으로 이동할 거리 계산
         Vector3 moveDistance = moveDirection * moveSpeed * Time.deltaTime;
         // 리지드바디를 이용해 게임 오브젝트 위치 변경

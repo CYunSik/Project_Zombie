@@ -38,8 +38,7 @@ public class ItemSpawner : MonoBehaviour {
     // 실제 아이템 생성 처리
     private void Spawn() {
         // 플레이어 근처에서 내비메시 위의 랜덤 위치 가져오기
-        Vector3 spawnPosition =
-            GetRandomPointOnNavMesh(playerTransform.position, maxDistance);
+        Vector3 spawnPosition = GetRandomPointOnNavMesh(playerTransform.position, maxDistance);
         // 바닥에서 0.5만큼 위로 올리기
         spawnPosition += Vector3.up * 0.5f;
 

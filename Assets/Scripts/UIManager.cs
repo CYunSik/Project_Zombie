@@ -11,7 +11,8 @@ public class UIManager : MonoBehaviour {
         {
             if (m_instance == null)
             {
-                m_instance = FindObjectOfType<UIManager>();
+                // FindFirstObjectByType으로 씬의 UIManager 오브젝트를 찾아 할당
+                m_instance = FindFirstObjectByType<UIManager>();
             }
 
             return m_instance;
