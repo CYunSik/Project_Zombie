@@ -24,7 +24,15 @@ public class UIManager : MonoBehaviour {
     public Text ammoText; // 탄약 표시용 텍스트
     public Text scoreText; // 점수 표시용 텍스트
     public Text waveText; // 적 웨이브 표시용 텍스트
+    public Text levelText; // 플레이어 레벨 표시용 텍스트
+    public Text experienceText; // 플레이어 경험치 표시용 텍스트
     public GameObject gameoverUI; // 게임 오버시 활성화할 UI 
+
+    private PlayerExperience playerExperience; // HUD에 표시할 플레이어 경험치 정보
+
+    private void Start() {
+        SetupExperienceUI();
+    }
 
     // 탄약 텍스트 갱신
     public void UpdateAmmoText(int magAmmo, int remainAmmo) {
@@ -41,6 +49,12 @@ public class UIManager : MonoBehaviour {
         waveText.text = "Wave : " + waves + "\nEnemy Left : " + count;
     }
 
+    // 플레이어 경험치 텍스트 갱신
+    public void UpdateExperienceText(int level, int currentExperience, int experienceToNextLevel) {
+        levelText.text = "Lv. " + level;
+        experienceText.text = "EXP : " + currentExperience + " / " + experienceToNextLevel;
+    }
+
     // 게임 오버 UI 활성화
     public void SetActiveGameoverUI(bool active) {
         gameoverUI.SetActive(active);
@@ -49,5 +63,72 @@ public class UIManager : MonoBehaviour {
     // 게임 재시작
     public void GameRestart() {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    private void SetupExperienceUI() {
+        CreateExperienceTextsIfNeeded();
+
+        playerExperience = FindFirstObjectByType<PlayerExperience>();
+
+        if (playerExperience == null)
+        {
+            PlayerHealth playerHealth = FindFirstObjectByType<PlayerHealth>();
+
+            if (playerHealth != null)
+            {
+                playerExperience = playerHealth.GetComponent<PlayerExperience>();
+
+                if (playerExperience == null)
+                {
+                    playerExperience = playerHealth.gameObject.AddComponent<PlayerExperience>();
+                }
+            }
+        }
+
+        if (playerExperience != null)
+        {
+            playerExperience.onExperienceChanged += UpdateExperienceText;
+            UpdateExperienceText(playerExperience.level, playerExperience.currentExperience, playerExperience.experienceToNextLevel);
+        }
+    }
+
+    private void CreateExperienceTextsIfNeeded() {
+        if (levelText == null)
+        {
+            levelText = CreateHudText("Level Text", new Vector2(20f, -20f), new Vector2(240f, 50f), 35);
+        }
+
+        if (experienceText == null)
+        {
+            experienceText = CreateHudText("Experience Text", new Vector2(20f, -70f), new Vector2(360f, 45f), 26);
+        }
+    }
+
+    private Text CreateHudText(string objectName, Vector2 anchoredPosition, Vector2 size, int fontSize) {
+        GameObject textObject = new GameObject(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+        textObject.transform.SetParent(transform, false);
+
+        RectTransform rectTransform = textObject.GetComponent<RectTransform>();
+        rectTransform.anchorMin = new Vector2(0f, 1f);
+        rectTransform.anchorMax = new Vector2(0f, 1f);
+        rectTransform.anchoredPosition = anchoredPosition;
+        rectTransform.sizeDelta = size;
+        rectTransform.pivot = new Vector2(0f, 1f);
+
+        Text text = textObject.GetComponent<Text>();
+        text.font = scoreText != null ? scoreText.font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.fontSize = fontSize;
+        text.alignment = TextAnchor.MiddleLeft;
+        text.color = Color.white;
+        text.raycastTarget = false;
+
+        return text;
+    }
+
+    private void OnDestroy() {
+        if (playerExperience != null)
+        {
+            playerExperience.onExperienceChanged -= UpdateExperienceText;
+        }
     }
 }

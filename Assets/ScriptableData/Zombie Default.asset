@@ -15,4 +15,5 @@ MonoBehaviour:
   health: 100
   damage: 30
   speed: 2
+  experienceReward: 10
   skinColor: {r: 1, g: 1, b: 1, a: 1}

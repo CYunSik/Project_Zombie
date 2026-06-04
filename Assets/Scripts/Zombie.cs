@@ -17,6 +17,7 @@ public class Zombie : LivingEntity
     private Animator zombieAnimator; // 애니메이터 컴포넌트
     private AudioSource zombieAudioPlayer; // 오디오 소스 컴포넌트
     private Renderer zombieRenderer; // 렌더러 컴포넌트
+    private ZombieHealthBar healthBar; // 머리 위에 표시할 체력바
 
     public float damage = 20f; // 공격력
     public float timeBetAttack = 0.5f; // 공격 간격
@@ -46,6 +47,13 @@ public class Zombie : LivingEntity
         // 렌더러 컴포넌트는 자식 게임 오브젝트에 있으므로
         // GetComponentChildren() 메서드 사용
         zombieRenderer = GetComponentInChildren<Renderer>();
+
+        // 좀비 프리팹에 체력바 컴포넌트가 없어도 런타임에 자동으로 추가
+        healthBar = GetComponent<ZombieHealthBar>();
+        if (healthBar == null)
+        {
+            healthBar = gameObject.AddComponent<ZombieHealthBar>();
+        }
     }
 
     // 좀비 AI의 초기 스펙을 결정하는 셋업 메서드
@@ -53,6 +61,7 @@ public class Zombie : LivingEntity
         // 체력 설정
         startingHealth = zombieData.health;
         health = zombieData.health;
+        healthBar.RefreshImmediate();
         // 공격력 설정
         damage = zombieData.damage;
         // 내비메시 에이전트의 이동 속도 설정
@@ -132,6 +141,7 @@ public class Zombie : LivingEntity
 
         // LivingEntity의 OnDamage()를 실행하여 데미지 적용
         base.OnDamage(damage, hitPoint, hitNormal);
+        healthBar.RefreshImmediate();
     }
 
     // 사망 처리
@@ -154,6 +164,9 @@ public class Zombie : LivingEntity
         zombieAnimator.SetTrigger("Die");
         // 사망 효과음 재생
         zombieAudioPlayer.PlayOneShot(deathSound);
+
+        // 사망한 좀비 위의 체력바는 숨김
+        healthBar.Hide();
     }
 
     private void OnTriggerStay(Collider other) {

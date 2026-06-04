@@ -9,7 +9,22 @@ public class ZombieSpawner : MonoBehaviour {
     public Transform[] spawnPoints; // 좀비 AI를 소환할 위치들
 
     private List<Zombie> zombies = new List<Zombie>(); // 생성된 좀비들을 담는 리스트
+    private PlayerExperience playerExperience; // 좀비 처치 경험치를 받을 플레이어 경험치 컴포넌트
     private int wave; // 현재 웨이브
+
+    private void Start() {
+        playerExperience = FindFirstObjectByType<PlayerExperience>();
+
+        if (playerExperience == null)
+        {
+            PlayerHealth playerHealth = FindFirstObjectByType<PlayerHealth>();
+
+            if (playerHealth != null)
+            {
+                playerExperience = playerHealth.gameObject.AddComponent<PlayerExperience>();
+            }
+        }
+    }
 
     private void Update() {
         // 게임 오버 상태일때는 생성하지 않음
@@ -74,5 +89,14 @@ public class ZombieSpawner : MonoBehaviour {
         zombie.onDeath += () => Destroy(zombie.gameObject, 10f);
         // 좀비 사망시 점수 상승
         zombie.onDeath += () => GameManager.instance.AddScore(100);
+        // 좀비 종류별로 설정된 경험치를 플레이어에게 지급
+        zombie.onDeath += () => GiveExperience(zombieData.experienceReward);
+    }
+
+    private void GiveExperience(int amount) {
+        if (playerExperience != null)
+        {
+            playerExperience.AddExperience(amount);
+        }
     }
 }

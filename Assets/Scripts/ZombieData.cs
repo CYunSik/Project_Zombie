@@ -6,5 +6,6 @@ public class ZombieData : ScriptableObject {
     public float health = 100f; // 체력
     public float damage = 20f; // 공격력
     public float speed = 2f; // 이동 속도
+    public int experienceReward = 10; // 처치시 플레이어가 얻는 경험치
     public Color skinColor = Color.white; // 피부색
 }
