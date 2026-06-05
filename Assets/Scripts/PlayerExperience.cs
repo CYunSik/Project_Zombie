@@ -13,6 +13,7 @@ public class PlayerExperience : MonoBehaviour
     public int experienceToNextLevel { get; private set; }
 
     public event Action<int, int, int> onExperienceChanged;
+    public event Action<int> onLevelUp;
 
     private void Awake()
     {
@@ -34,6 +35,7 @@ public class PlayerExperience : MonoBehaviour
             currentExperience -= experienceToNextLevel;
             level++;
             experienceToNextLevel += experienceIncreasePerLevel;
+            onLevelUp?.Invoke(level);
         }
 
         NotifyExperienceChanged();

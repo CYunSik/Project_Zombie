@@ -44,14 +44,29 @@ public class PlayerHealth : LivingEntity {
     public override void RestoreHealth(float newHealth) {
         // LivingEntity의 RestoreHealth() 실행 (체력 증가)
         base.RestoreHealth(newHealth);
-        // 갱신된 체력으로 체력 슬라이더 갱신
-        healthSlider.value = health;
 
         // 힐팩 아이템으로 최대체력 이상 회복 불가능
         if (health > startingHealth)
         {
             health = startingHealth;
         }
+
+        // 갱신된 체력으로 체력 슬라이더 갱신
+        healthSlider.value = health;
+    }
+
+    // 최대 체력 증가
+    public void IncreaseMaxHealth(float amount) {
+        if (amount <= 0f)
+        {
+            return;
+        }
+
+        startingHealth += amount;
+        health += amount;
+
+        healthSlider.maxValue = startingHealth;
+        healthSlider.value = health;
     }
 
     // 데미지 처리

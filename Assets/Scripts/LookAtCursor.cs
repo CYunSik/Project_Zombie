@@ -14,6 +14,12 @@ public class LookAtCursor : MonoBehaviour
 
     void Update()
     {
+        // 레벨업 카드 선택 등으로 게임이 일시정지된 동안에는 마우스 방향을 따라 회전하지 않음
+        if (Time.timeScale <= 0f)
+        {
+            return;
+        }
+
         LookAtMouse();
     }
 

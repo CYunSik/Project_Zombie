@@ -29,6 +29,10 @@ public class Gun : MonoBehaviour {
     public int magAmmo; // 현재 탄알집에 남아 있는 탄알
 
     private float lastFireTime; // 총을 마지막으로 발사한 시점
+    private float damageBonus; // 레벨업 등으로 추가된 데미지
+    private int magCapacityBonus; // 레벨업 등으로 추가된 탄창 용량
+
+    private int CurrentMagCapacity => gunData.magCapacity + magCapacityBonus;
 
     private void Awake() {
         // 사용할 컴포넌트의 참조 가져오기
@@ -48,7 +52,7 @@ public class Gun : MonoBehaviour {
         // 전체 예비 탄알 양을 초기화
         ammoRemain = gunData.startAmmoRemain;
         // 현재 탄창을 가득 채우기
-        magAmmo = gunData.magCapacity;
+        magAmmo = CurrentMagCapacity;
 
         // 총의 현재 상태를 총을 쏠 준비가 된 상태로 변경
         state = State.Ready;
@@ -88,7 +92,7 @@ public class Gun : MonoBehaviour {
             if (target != null)
             {
                 // 상대방의 OnDamage 함수를 실행시켜 상대방에 데미지 주기
-                target.OnDamage(gunData.damage, hit.point, hit.normal);
+                target.OnDamage(gunData.damage + damageBonus, hit.point, hit.normal);
             }
 
             // 레이가 충돌한 위치 저장
@@ -142,7 +146,7 @@ public class Gun : MonoBehaviour {
 
     // 재장전 시도
     public bool Reload() {
-        if(state == State.Reloading || ammoRemain <= 0 || magAmmo >= gunData.magCapacity)
+        if(state == State.Reloading || ammoRemain <= 0 || magAmmo >= CurrentMagCapacity)
         {
             // 이미 재장전 중이거나 남은 탄알이 없거나
             // 탄창에 탄알이 이미 가득한 경우 재장전할 수 없음
@@ -152,6 +156,25 @@ public class Gun : MonoBehaviour {
         // 재장전 처리 시작
         StartCoroutine(ReloadRoutine());
         return true;
+    }
+
+    // 총 데미지 증가
+    public void IncreaseDamage(float amount) {
+        if (amount > 0f)
+        {
+            damageBonus += amount;
+        }
+    }
+
+    // 탄창 용량 증가
+    public void IncreaseMagCapacity(int amount) {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        magCapacityBonus += amount;
+        magAmmo += amount;
     }
 
     // 실제 재장전 처리를 진행
@@ -165,7 +188,7 @@ public class Gun : MonoBehaviour {
         yield return new WaitForSeconds(gunData.reloadTime);
 
         // 탄창에 채울 탄알 계산
-        int ammoToFill = gunData.magCapacity - magAmmo;
+        int ammoToFill = CurrentMagCapacity - magAmmo;
 
         // 탄창에 채워야 할 탄알이 남은 탄알보다 많다면
         // 채워야 할 탄알 수를 남은 탄알 수에 맞춰 줄임

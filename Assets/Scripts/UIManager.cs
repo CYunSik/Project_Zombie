@@ -26,12 +26,28 @@ public class UIManager : MonoBehaviour {
     public Text waveText; // 적 웨이브 표시용 텍스트
     public Text levelText; // 플레이어 레벨 표시용 텍스트
     public Text experienceText; // 플레이어 경험치 표시용 텍스트
+    public Text timerText; // 진행 시간 표시용 텍스트
     public GameObject gameoverUI; // 게임 오버시 활성화할 UI 
 
     private PlayerExperience playerExperience; // HUD에 표시할 플레이어 경험치 정보
+    private LevelUpUpgradeManager levelUpUpgradeManager; // 레벨업 카드 선택 UI 관리
+    private float playTime; // 게임 진행 시간
 
     private void Start() {
+        CreateTimerTextIfNeeded();
         SetupExperienceUI();
+        UpdateTimerText();
+    }
+
+    private void Update() {
+        if (GameManager.instance != null && GameManager.instance.isGameover)
+        {
+            return;
+        }
+
+        // Time.deltaTime은 Time.timeScale이 0이면 증가하지 않으므로 레벨업 카드 선택 중에는 타이머도 멈춘다
+        playTime += Time.deltaTime;
+        UpdateTimerText();
     }
 
     // 탄약 텍스트 갱신
@@ -53,6 +69,20 @@ public class UIManager : MonoBehaviour {
     public void UpdateExperienceText(int level, int currentExperience, int experienceToNextLevel) {
         levelText.text = "Lv. " + level;
         experienceText.text = "EXP : " + currentExperience + " / " + experienceToNextLevel;
+    }
+
+    // 진행 시간 텍스트 갱신
+    public void UpdateTimerText() {
+        if (timerText == null)
+        {
+            return;
+        }
+
+        int totalSeconds = Mathf.FloorToInt(playTime);
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+
+        timerText.text = "Time : " + minutes.ToString("00") + ":" + seconds.ToString("00");
     }
 
     // 게임 오버 UI 활성화
@@ -89,7 +119,19 @@ public class UIManager : MonoBehaviour {
         {
             playerExperience.onExperienceChanged += UpdateExperienceText;
             UpdateExperienceText(playerExperience.level, playerExperience.currentExperience, playerExperience.experienceToNextLevel);
+            SetupLevelUpUpgradeManager();
         }
+    }
+
+    private void SetupLevelUpUpgradeManager() {
+        levelUpUpgradeManager = GetComponent<LevelUpUpgradeManager>();
+
+        if (levelUpUpgradeManager == null)
+        {
+            levelUpUpgradeManager = gameObject.AddComponent<LevelUpUpgradeManager>();
+        }
+
+        levelUpUpgradeManager.Initialize(playerExperience);
     }
 
     private void CreateExperienceTextsIfNeeded() {
@@ -102,6 +144,30 @@ public class UIManager : MonoBehaviour {
         {
             experienceText = CreateHudText("Experience Text", new Vector2(20f, -70f), new Vector2(360f, 45f), 26);
         }
+    }
+
+    private void CreateTimerTextIfNeeded() {
+        if (timerText != null)
+        {
+            return;
+        }
+
+        GameObject textObject = new GameObject("Timer Text", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+        textObject.transform.SetParent(transform, false);
+
+        RectTransform rectTransform = textObject.GetComponent<RectTransform>();
+        rectTransform.anchorMin = new Vector2(1f, 1f);
+        rectTransform.anchorMax = new Vector2(1f, 1f);
+        rectTransform.anchoredPosition = new Vector2(-20f, -20f);
+        rectTransform.sizeDelta = new Vector2(360f, 60f);
+        rectTransform.pivot = new Vector2(1f, 1f);
+
+        timerText = textObject.GetComponent<Text>();
+        timerText.font = scoreText != null ? scoreText.font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        timerText.fontSize = 35;
+        timerText.alignment = TextAnchor.MiddleRight;
+        timerText.color = Color.white;
+        timerText.raycastTarget = false;
     }
 
     private Text CreateHudText(string objectName, Vector2 anchoredPosition, Vector2 size, int fontSize) {
