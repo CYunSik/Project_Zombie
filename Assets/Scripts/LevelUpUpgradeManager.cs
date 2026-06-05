@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 // 레벨업시 3개의 랜덤 업그레이드 카드를 보여주고 선택한 능력을 적용
@@ -11,6 +12,7 @@ public class LevelUpUpgradeManager : MonoBehaviour
 
     private readonly List<UpgradeOption> allOptions = new List<UpgradeOption>();
     private readonly Button[] cardButtons = new Button[CardCount];
+    private readonly LevelUpUpgradeCardHover[] cardHoverEffects = new LevelUpUpgradeCardHover[CardCount];
     private readonly Text[] cardTitleTexts = new Text[CardCount];
     private readonly Text[] cardDescriptionTexts = new Text[CardCount];
 
@@ -105,6 +107,7 @@ public class LevelUpUpgradeManager : MonoBehaviour
             cardTitleTexts[i].text = option.title;
             cardDescriptionTexts[i].text = option.description;
             cardButtons[i].interactable = false;
+            cardHoverEffects[i].ResetState();
 
             cardButtons[i].onClick.RemoveAllListeners();
             cardButtons[i].onClick.AddListener(() => SelectOption(option));
@@ -148,6 +151,7 @@ public class LevelUpUpgradeManager : MonoBehaviour
         }
 
         canSelect = false;
+        ResetCardHoverEffects();
         option.Apply();
         panelObject.SetActive(false);
         isShowing = false;
@@ -260,6 +264,17 @@ public class LevelUpUpgradeManager : MonoBehaviour
         panelObject.SetActive(false);
     }
 
+    private void ResetCardHoverEffects()
+    {
+        for (int i = 0; i < cardHoverEffects.Length; i++)
+        {
+            if (cardHoverEffects[i] != null)
+            {
+                cardHoverEffects[i].ResetState();
+            }
+        }
+    }
+
     private void CreateCard(int index, Font font)
     {
         GameObject cardObject = new GameObject("Upgrade Card " + (index + 1), typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
@@ -277,7 +292,12 @@ public class LevelUpUpgradeManager : MonoBehaviour
 
         Button button = cardObject.GetComponent<Button>();
         button.targetGraphic = cardImage;
+        button.transition = Selectable.Transition.None;
         cardButtons[index] = button;
+
+        LevelUpUpgradeCardHover hoverEffect = cardObject.AddComponent<LevelUpUpgradeCardHover>();
+        hoverEffect.Initialize(cardImage);
+        cardHoverEffects[index] = hoverEffect;
 
         cardTitleTexts[index] = CreateText("Title", cardObject.transform, new Vector2(0.5f, 1f), new Vector2(0f, -120f), new Vector2(420f, 150f), 51, TextAnchor.MiddleCenter, font);
         cardDescriptionTexts[index] = CreateText("Description", cardObject.transform, new Vector2(0.5f, 0.5f), new Vector2(0f, -65f), new Vector2(405f, 255f), 39, TextAnchor.MiddleCenter, font);
@@ -334,6 +354,42 @@ public class LevelUpUpgradeManager : MonoBehaviour
         public void Apply()
         {
             apply?.Invoke();
+        }
+    }
+}
+
+// 레벨업 카드 위에 마우스를 올렸을 때 선택 중인 카드가 눈에 띄도록 색만 변경
+class LevelUpUpgradeCardHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+{
+    private readonly Color normalColor = new Color(0.12f, 0.12f, 0.12f, 0.95f);
+    private readonly Color hoverColor = new Color(0.32f, 0.32f, 0.32f, 1f);
+
+    private Image cardImage;
+
+    public void Initialize(Image image)
+    {
+        cardImage = image;
+        ResetState();
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (cardImage != null)
+        {
+            cardImage.color = hoverColor;
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        ResetState();
+    }
+
+    public void ResetState()
+    {
+        if (cardImage != null)
+        {
+            cardImage.color = normalColor;
         }
     }
 }

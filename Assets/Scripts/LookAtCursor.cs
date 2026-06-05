@@ -3,9 +3,12 @@ using UnityEngine;
 public class LookAtCursor : MonoBehaviour
 {
     public Camera mainCamera;
+    private LivingEntity livingEntity;
 
     void Start()
     {
+        livingEntity = GetComponent<LivingEntity>();
+
         if (mainCamera == null)
         {
             mainCamera = Camera.main;
@@ -16,6 +19,12 @@ public class LookAtCursor : MonoBehaviour
     {
         // 레벨업 카드 선택 등으로 게임이 일시정지된 동안에는 마우스 방향을 따라 회전하지 않음
         if (Time.timeScale <= 0f)
+        {
+            return;
+        }
+
+        // 플레이어가 사망한 뒤에는 죽은 자세가 마우스 방향으로 계속 돌아가지 않도록 멈춤
+        if (livingEntity != null && livingEntity.dead)
         {
             return;
         }

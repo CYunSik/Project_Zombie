@@ -35,6 +35,7 @@ public class UIManager : MonoBehaviour {
 
     private void Start() {
         CreateTimerTextIfNeeded();
+        CreateLobbyButtonIfNeeded();
         SetupExperienceUI();
         UpdateTimerText();
     }
@@ -92,7 +93,14 @@ public class UIManager : MonoBehaviour {
 
     // 게임 재시작
     public void GameRestart() {
+        Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    // 게임 오버 화면에서 로비 씬으로 이동
+    public void ReturnToLobby() {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("Lobby");
     }
 
     private void SetupExperienceUI() {
@@ -189,6 +197,56 @@ public class UIManager : MonoBehaviour {
         text.raycastTarget = false;
 
         return text;
+    }
+
+    private void CreateLobbyButtonIfNeeded() {
+        if (gameoverUI == null || gameoverUI.transform.Find("Lobby Button") != null)
+        {
+            return;
+        }
+
+        Button restartButton = gameoverUI.GetComponentInChildren<Button>(true);
+        GameObject buttonObject;
+
+        if (restartButton != null)
+        {
+            buttonObject = Instantiate(restartButton.gameObject, gameoverUI.transform);
+            buttonObject.name = "Lobby Button";
+        }
+        else
+        {
+            buttonObject = new GameObject("Lobby Button", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            buttonObject.transform.SetParent(gameoverUI.transform, false);
+        }
+
+        RectTransform rectTransform = buttonObject.GetComponent<RectTransform>();
+        if (restartButton != null)
+        {
+            RectTransform restartRect = restartButton.GetComponent<RectTransform>();
+            rectTransform.anchorMin = restartRect.anchorMin;
+            rectTransform.anchorMax = restartRect.anchorMax;
+            rectTransform.pivot = restartRect.pivot;
+            rectTransform.sizeDelta = restartRect.sizeDelta;
+            rectTransform.anchoredPosition = restartRect.anchoredPosition + new Vector2(0f, -90f);
+        }
+        else
+        {
+            rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+            rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            rectTransform.anchoredPosition = new Vector2(0f, -120f);
+            rectTransform.sizeDelta = new Vector2(300f, 80f);
+        }
+
+        Button button = buttonObject.GetComponent<Button>();
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(ReturnToLobby);
+
+        Text text = buttonObject.GetComponentInChildren<Text>(true);
+        if (text != null)
+        {
+            text.text = "Back to Lobby";
+        }
     }
 
     private void OnDestroy() {

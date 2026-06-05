@@ -3,6 +3,8 @@
 // 점수와 게임 오버 여부를 관리하는 게임 매니저
 public class GameManager : MonoBehaviour
 {
+    public const string HighScoreKey = "HighScore"; // PlayerPrefs에 저장할 최고 점수 키
+
     // 싱글톤 접근용 프로퍼티
     public static GameManager instance
     {
@@ -57,10 +59,25 @@ public class GameManager : MonoBehaviour
     // 게임 오버 처리
     public void EndGame()
     {
+        SaveHighScoreIfNeeded();
+
         // 게임 오버 상태를 참으로 변경
         isGameover = true;
         // 게임 오버 UI를 활성화
         UIManager.instance.SetActiveGameoverUI(true);
+    }
+
+    private void SaveHighScoreIfNeeded()
+    {
+        int highScore = PlayerPrefs.GetInt(HighScoreKey, 0);
+
+        if (score <= highScore)
+        {
+            return;
+        }
+
+        PlayerPrefs.SetInt(HighScoreKey, score);
+        PlayerPrefs.Save();
     }
 
     private void Update()

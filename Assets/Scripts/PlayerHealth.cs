@@ -14,6 +14,7 @@ public class PlayerHealth : LivingEntity {
 
     private PlayerMovement playerMovement; // 플레이어 움직임 컴포넌트
     private PlayerShooter playerShooter; // 플레이어 슈터 컴포넌트
+    private LookAtCursor lookAtCursor; // 마우스 방향으로 캐릭터를 회전시키는 컴포넌트
 
     private void Awake() {
         // 사용할 컴포넌트를 가져오기
@@ -22,6 +23,7 @@ public class PlayerHealth : LivingEntity {
 
         playerMovement = GetComponent<PlayerMovement>();
         playerShooter = GetComponent<PlayerShooter>();
+        lookAtCursor = GetComponent<LookAtCursor>();
     }
 
     protected override void OnEnable() {
@@ -38,6 +40,10 @@ public class PlayerHealth : LivingEntity {
         // 플레이어 조작을 받는 컴포넌트 활성화
         playerMovement.enabled = true;
         playerShooter.enabled = true;
+        if (lookAtCursor != null)
+        {
+            lookAtCursor.enabled = true;
+        }
     }
 
     // 체력 회복
@@ -99,6 +105,10 @@ public class PlayerHealth : LivingEntity {
         // 플레이어 조작을 받는 컴포넌트 비활성화
         playerMovement.enabled = false;
         playerShooter.enabled = false;
+        if (lookAtCursor != null)
+        {
+            lookAtCursor.enabled = false;
+        }
     }
 
     private void OnTriggerEnter(Collider other) {

@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   health: 25
   damage: 10
-  speed: 6
+  speed: 7
   experienceReward: 20
   skinColor: {r: 0, g: 0.042280674, b: 1, a: 1}
